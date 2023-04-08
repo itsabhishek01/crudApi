@@ -1,6 +1,19 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  Button,
+} from "@material-ui/core";
+import { Delete, Edit, Refresh, Home } from "@material-ui/icons";
+import swal from "sweetalert";
 
 function Read() {
   const navigate = useNavigate();
@@ -12,80 +25,104 @@ function Read() {
       .get("https://642ff389c26d69edc88760fb.mockapi.io/Crud")
       .then((response) => {
         setMyData(response.data);
+        swal({
+          title: "Data fetched Successfully",
+          icon: "success",
+          dangerMode: false,
+          timer: 2000
+        });
       })
-      .catch((error) => setError(error.message));
+      .catch((error) =>
+        swal("Oops!", "Seems like we couldn't fetch the info", "error")
+      );
   };
+
   useEffect(() => {
     getData();
   }, []);
 
-  const handleDelete = (id) => {
-    axios
-      .delete(`https://642ff389c26d69edc88760fb.mockapi.io/Crud/${id}`)
-      .then(() => getData())
-      .catch((error) => setError(error.message));
-  };
 
   const handleDataRefresh = () => {
     getData();
   };
 
+
+  const handleDelete = (id) => {
+    swal({
+      title: "Are you sure?",
+      text: "Once deleted, you will not be able to recover this data!",
+      icon: "warning",
+      buttons: true,
+      dangerMode: true,
+    }).then((willDelete) => {
+      if (willDelete) {
+        axios
+          .delete(`https://642ff389c26d69edc88760fb.mockapi.io/Crud/${id}`)
+          .then(() => getData())
+          .catch((error) => setError(error.message));
+      }
+    });
+  };
   return (
-    <div>
-      <h1>Reading the data</h1>
-      <p
-        onClick={handleDataRefresh}
-        style={{ color: "Red", cursor: "pointer" }}
-      >
-        Refresh
-      </p>
-      <table className="table-data">
-        <th>ID</th>
-        <th>Name</th>
-        <th>E Mail</th>
-        <th>Age</th>
-        <th>edit</th>
-        <th>delete</th>
-        {myData.map((value) => {
-          const { id, e_name, e_age, e_email } = value;
-          return (
-            <tr key={id}>
-              <td>{id}</td>
-              <td>{e_name}</td>
-              <td>{e_email}</td>
-              <td>{e_age}</td>
-              <td>
-                <p
-                  onClick={() => {
-                    navigate("/edit", { state: { data: value } });
-                  }}
-                  style={{ color: "grey", fontSize: "12px", cursor: "pointer" }}
-                >
-                  edit
-                </p>
-              </td>
-              <td>
-                <p
-                  onClick={() => {
-                    if (window.confirm("Are you Sure to Delete Data??")) {
-                      handleDelete(id);
-                    }
-                  }}
-                  style={{ color: "red", fontSize: "12px", cursor: "pointer" }}
-                >
-                  Delete
-                </p>
-              </td>
-            </tr>
-          );
-        })}
-      </table>
-      <p
+    <div style={{padding:'55px'}}>
+      <h1>Users Data</h1>
+      <IconButton onClick={handleDataRefresh} style={{ color: "red" }}>
+        <Refresh />
+      </IconButton>
+      <IconButton
         onClick={() => navigate("/")}
-        style={{ color: "red", cursor: "pointer" }}
+        style={{ color: "grey" }}
       >
-        Go back to form
-      </p>
+        <Home />
+      </IconButton>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell>E Mail</TableCell>
+              <TableCell>Age</TableCell>
+              <TableCell>Edit</TableCell>
+              <TableCell>Delete</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {myData.map((value) => {
+              const { id, e_name, e_age, e_email } = value;
+              return (
+                <TableRow key={id}>
+                  <TableCell>{id}</TableCell>
+                  <TableCell>{e_name}</TableCell>
+                  <TableCell>{e_email}</TableCell>
+                  <TableCell>{e_age}</TableCell>
+                  <TableCell>
+                    <IconButton
+                      onClick={() => {
+                        navigate("/edit", { state: { data: value } });
+                      }}
+                      style={{ color: "grey" }}
+                    >
+                      <Edit />
+                    </IconButton>
+                  </TableCell>
+                  <TableCell>
+                    <IconButton
+                      onClick={() => {
+                          handleDelete(id);
+                        
+                      }}
+                      style={{ color: "red" }}
+                    >
+                      <Delete />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </div>
   );
 }
