@@ -10,15 +10,14 @@ import {
   TableRow,
   Paper,
   IconButton,
-  Button,
 } from "@material-ui/core";
 import { Delete, Edit, Refresh, Home } from "@material-ui/icons";
 import swal from "sweetalert";
+import './Read.css'
 
 function Read() {
   const navigate = useNavigate();
   const [myData, setMyData] = useState([]);
-  const [error, setError] = useState("");
 
   const getData = () => {
     axios
@@ -29,11 +28,11 @@ function Read() {
           title: "Data fetched Successfully",
           icon: "success",
           dangerMode: false,
-          timer: 2000
+          timer: 1000
         });
       })
       .catch((error) =>
-        swal("Oops!", "Seems like we couldn't fetch the info", "error")
+        swal("Oops!", "Seems like we couldn't fetch the info", error)
       );
   };
 
@@ -52,14 +51,21 @@ function Read() {
       title: "Are you sure?",
       text: "Once deleted, you will not be able to recover this data!",
       icon: "warning",
-      buttons: true,
+      // buttons: true,
+      toast: true,
       dangerMode: true,
     }).then((willDelete) => {
       if (willDelete) {
         axios
           .delete(`https://642ff389c26d69edc88760fb.mockapi.io/Crud/${id}`)
           .then(() => getData())
-          .catch((error) => setError(error.message));
+          .catch((error) => swal({
+            title: "Error!",
+            text: "Error Deleting Data",
+            icon: "error",
+            timer: 1000,
+            buttons: false,
+          }));
       }
     });
   };
